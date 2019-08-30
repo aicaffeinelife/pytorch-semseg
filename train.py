@@ -10,17 +10,17 @@ import numpy as np
 from torch.utils import data
 from tqdm import tqdm
 
+
 from ptsemseg.models import get_model
 from ptsemseg.loss import get_loss_function
 from ptsemseg.loader import get_loader
-from ptsemseg.utils import get_logger
+from ptsemseg.utils import get_logger, Table
 from ptsemseg.metrics import runningScore, averageMeter
 from ptsemseg.augmentations import get_composed_augmentations
 from ptsemseg.schedulers import get_scheduler
 from ptsemseg.optimizers import get_optimizer
 
 from tensorboardX import SummaryWriter
-
 
 def train(cfg, writer, logger):
 
@@ -46,14 +46,14 @@ def train(cfg, writer, logger):
         is_transform=True,
         split=cfg["data"]["train_split"],
         img_size=(cfg["data"]["img_rows"], cfg["data"]["img_cols"]),
-        augmentations=data_aug,
+        augmentations=data_aug
     )
 
     v_loader = data_loader(
         data_path,
         is_transform=True,
         split=cfg["data"]["val_split"],
-        img_size=(cfg["data"]["img_rows"], cfg["data"]["img_cols"]),
+        img_size=(cfg["data"]["img_rows"], cfg["data"]["img_cols"])
     )
 
     n_classes = t_loader.n_classes
@@ -113,6 +113,8 @@ def train(cfg, writer, logger):
     best_iou = -100.0
     i = start_iter
     flag = True
+    score_table = Table(["Overall_Acc", "Mean_Acc", "FreqW_Acc", "Mean_IoU"])
+    class_table = Table([str(i) for i in range(t_loader.num_classes + 1)])
 
     while i <= cfg["training"]["train_iters"] and flag:
         for (images, labels) in trainloader:
@@ -151,6 +153,7 @@ def train(cfg, writer, logger):
                 "train_iters"
             ]:
                 model.eval()
+                # unncessary
                 with torch.no_grad():
                     for i_val, (images_val, labels_val) in tqdm(enumerate(valloader)):
                         images_val = images_val.to(device)
@@ -171,11 +174,13 @@ def train(cfg, writer, logger):
                 score, class_iou = running_metrics_val.get_scores()
                 for k, v in score.items():
                     print(k, v)
-                    logger.info("{}: {}".format(k, v))
+                    score_table.update(score)
+                    score_table.print_table()
                     writer.add_scalar("val_metrics/{}".format(k), v, i + 1)
 
                 for k, v in class_iou.items():
-                    logger.info("{}: {}".format(k, v))
+                    class_table.update(class_iou)
+                    class_table.print_table()
                     writer.add_scalar("val_metrics/cls_{}".format(k), v, i + 1)
 
                 val_loss_meter.reset()

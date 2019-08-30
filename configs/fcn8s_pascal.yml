@@ -6,14 +6,13 @@ data:
     val_split: val
     img_rows: 'same'
     img_cols: 'same'
-    path: /private/home/meetshah/datasets/VOC/060817/VOCdevkit/VOC2012/
-    sbd_path: /private/home/meetshah/datasets/VOC/benchmark_RELEASE/
+    path: /mnt/DATA/VOC/VOCdevkit/VOC2012/
 training:
-    train_iters: 300000
+    train_iters: 100 # fine tuning the net
     batch_size: 1
-    val_interval: 1000
+    val_interval: 20
     n_workers: 16
-    print_interval: 50
+    print_interval: 10
     optimizer:
         name: 'sgd'
         lr: 1.0e-10

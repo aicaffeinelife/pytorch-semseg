@@ -14,6 +14,7 @@ from tqdm import tqdm
 from torch.utils import data
 from torchvision import transforms
 
+SBD_PATH = '/mnt/DATA/VOC/benchmark_RELEASE'
 
 class pascalVOCLoader(data.Dataset):
     """Data loader for the Pascal VOC semantic segmentation dataset.
@@ -44,7 +45,6 @@ class pascalVOCLoader(data.Dataset):
     def __init__(
         self,
         root,
-        sbd_path=None,
         split="train_aug",
         is_transform=False,
         img_size=512,
@@ -53,7 +53,7 @@ class pascalVOCLoader(data.Dataset):
         test_mode=False,
     ):
         self.root = root
-        self.sbd_path = sbd_path
+        self.sbd_path = SBD_PATH
         self.split = split
         self.is_transform = is_transform
         self.augmentations = augmentations

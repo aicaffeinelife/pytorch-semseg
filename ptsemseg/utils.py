@@ -7,6 +7,31 @@ import datetime
 import numpy as np
 
 from collections import OrderedDict
+from tabulate import tabulate
+
+
+class Table:
+    def __init__(self, header):
+        self.header = header
+        self.data = []
+    def update(self, data_dict):
+        if not self._checkeys(data_dict):
+            raise KeyError("Improper data")
+        self.data.append([v for k,v in data_dict.items()])
+
+    def print_table(self):
+        print(tabulate(self.data, headers=self.header))
+
+    def _checkeys(self, data_dict):
+        keys = [k for k in data_dict.keys()]
+        if len(keys) != len(self.header):
+            return False
+        isok = all([k == h for k, h in zip(keys, self.header)])
+        if isok:
+            return True
+        else:
+            return False
+
 
 
 def recursive_glob(rootdir=".", suffix=""):
@@ -58,3 +83,5 @@ def get_logger(logdir):
     logger.addHandler(hdlr)
     logger.setLevel(logging.INFO)
     return logger
+
+

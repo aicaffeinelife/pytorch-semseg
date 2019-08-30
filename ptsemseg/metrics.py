@@ -39,10 +39,10 @@ class runningScore(object):
 
         return (
             {
-                "Overall Acc: \t": acc,
-                "Mean Acc : \t": acc_cls,
-                "FreqW Acc : \t": fwavacc,
-                "Mean IoU : \t": mean_iu,
+                "Overall_Acc": acc,
+                "Mean_Acc": acc_cls,
+                "FreqW_Acc": fwavacc,
+                "Mean_IoU": mean_iu,
             },
             cls_iu,
         )
