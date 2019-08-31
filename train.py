@@ -114,7 +114,8 @@ def train(cfg, writer, logger):
     i = start_iter
     flag = True
     score_table = Table(["Overall_Acc", "Mean_Acc", "FreqW_Acc", "Mean_IoU"])
-    class_table = Table([str(i) for i in range(t_loader.num_classes + 1)])
+    class_table = Table([i for i in range(t_loader.n_classes)])
+    # print(class_table.header)
 
     while i <= cfg["training"]["train_iters"] and flag:
         for (images, labels) in trainloader:
@@ -172,22 +173,22 @@ def train(cfg, writer, logger):
                 logger.info("Iter %d Loss: %.4f" % (i + 1, val_loss_meter.avg))
 
                 score, class_iou = running_metrics_val.get_scores()
+                score_table.update(score)
                 for k, v in score.items():
-                    print(k, v)
-                    score_table.update(score)
-                    score_table.print_table()
                     writer.add_scalar("val_metrics/{}".format(k), v, i + 1)
+                score_table.print_table()
+                # print(class_iou)
 
+                class_table.update(class_iou)
                 for k, v in class_iou.items():
-                    class_table.update(class_iou)
-                    class_table.print_table()
                     writer.add_scalar("val_metrics/cls_{}".format(k), v, i + 1)
+                class_table.print_table()
 
                 val_loss_meter.reset()
                 running_metrics_val.reset()
 
-                if score["Mean IoU : \t"] >= best_iou:
-                    best_iou = score["Mean IoU : \t"]
+                if score["Mean_IoU"] >= best_iou:
+                    best_iou = score["Mean_IoU"]
                     state = {
                         "epoch": i + 1,
                         "model_state": model.state_dict(),
@@ -223,7 +224,7 @@ if __name__ == "__main__":
 
     run_id = random.randint(1, 100000)
     logdir = os.path.join("runs", os.path.basename(args.config)[:-4], str(run_id))
-    writer = SummaryWriter(log_dir=logdir)
+    writer = SummaryWriter(logdir=logdir)
 
     print("RUNDIR: {}".format(logdir))
     shutil.copy(args.config, logdir)

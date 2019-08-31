@@ -8,7 +8,7 @@ data:
     img_cols: 'same'
     path: /mnt/DATA/VOC/VOCdevkit/VOC2012/
 training:
-    train_iters: 100 # fine tuning the net
+    train_iters: 6800 # fine tuning the net
     batch_size: 1
     val_interval: 20
     n_workers: 16
