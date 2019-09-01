@@ -197,7 +197,7 @@ def train(cfg, writer, logger):
                         "best_iou": best_iou,
                     }
                     save_path = os.path.join(
-                        writer.file_writer.get_logdir(),
+                        cfg["training"]["ckpt_path"],
                         "{}_{}_best_model.pkl".format(cfg["model"]["arch"], cfg["data"]["dataset"]),
                     )
                     torch.save(state, save_path)
