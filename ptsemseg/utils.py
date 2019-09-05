@@ -19,8 +19,31 @@ class Table:
             raise KeyError("Improper data")
         self.data.append([v for k,v in data_dict.items()])
 
+    def dump_to_file(self, fname):
+        with open(fname, 'w') as wfile:
+            wfile.write(tabulate(self.data, headers=self.header))
+
     def print_table(self):
         print(tabulate(self.data, headers=self.header))
+
+    def print_recent(self):
+        print(tabulate(self.data[-1], headers=self.header))
+
+    def print_upto(self, history=10):
+        """Prints the data from the end"""
+        data = self.data[history:]
+        print(tabulate(data, headers=self.header))
+
+    def flush(self, keepheader=True):
+        """Flush the entire contents of the data"""
+        del self.data[:] # inplace flush
+        if not keepheader:
+            self.header = None
+
+    def flush_upto(self, history=100):
+        """Flush data in the given history"""
+        assert(history < len(self.data))
+        del self.data[:history]
 
     def _checkeys(self, data_dict):
         keys = [k for k in data_dict.keys()]
