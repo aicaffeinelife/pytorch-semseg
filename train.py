@@ -176,13 +176,13 @@ def train(cfg, writer, logger):
                 score_table.update(score)
                 for k, v in score.items():
                     writer.add_scalar("val_metrics/{}".format(k), v, i + 1)
-                score_table.print_table()
+                score_table.print_recent()
                 # print(class_iou)
 
                 class_table.update(class_iou)
                 for k, v in class_iou.items():
                     writer.add_scalar("val_metrics/cls_{}".format(k), v, i + 1)
-                class_table.print_table()
+                class_table.print_recent()
 
                 val_loss_meter.reset()
                 running_metrics_val.reset()

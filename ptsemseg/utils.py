@@ -1,6 +1,7 @@
 """
 Misc Utility functions
 """
+import torch
 import os
 import logging
 import datetime
@@ -79,6 +80,13 @@ def alpha_blend(input_image, segmentation_mask, alpha=0.5):
     blended = np.zeros(input_image.size, dtype=np.float32)
     blended = input_image * alpha + segmentation_mask * (1 - alpha)
     return blended
+
+def load_checkpoint(ckpt_path, data_parallel=True):
+    ckpt = torch.load(ckpt_path)
+    if data_parallel:
+        model_state = convert_state_dict(ckpt["model_state"])
+        ckpt["model_state"] = model_state
+    return ckpt
 
 
 def convert_state_dict(state_dict):
