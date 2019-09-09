@@ -765,6 +765,72 @@ class cascadeFeatureFusion(nn.Module):
 
         return high_fused_fm, low_cls
 
+class SpatialAttentionModule(nn.Module):
+    """Spatial Attention Module from
+    https://arxiv.org/pdf/1809.02983.pdf(Dual Attention Network)
+
+    Discrepancy: Authors don't mention channel reduction
+    in paper, but use that in code!
+    """
+    def __init__(self,
+                 in_channel,
+                 rr=8):
+        super(SpatialAttentionModule, self).__init__()
+        self.b = nn.Conv2d(in_channel,
+                           in_channel//rr,
+                           (1,1),
+                           stride=1,
+                           padding=0)
+        self.c = nn.Conv2d(in_channel,
+                           in_channel//rr,
+                           (1,1),
+                           stride=1,
+                           padding=0)
+        self.d = nn.Conv2d(in_channel,
+                           in_channel,
+                           (1,1),
+                           stride=1,
+                           padding=0)
+        self.alpha = nn.Parameter(torch.zero(1))
+        self.softmax = nn.Softmax(dim=-1)
+    def forward(self, x):
+        N, C, H, W = x.size()
+        x_b = self.b(x).view(N, -1, H*W).permute(0, 2, 1)
+        x_c = self.c(x).view(N, -1, H*W)
+        attention = torch.matmul(x_b, x_c) # HxW x HxW
+        attention = self.softmax(attention)
+        x_d = self.d(x).view(N, -1, H*W)
+        siml = torch.matmul(x_d,
+                            attention.permute(0, 2, 1)).view(N, -1, H, W)
+        out = self.alpha * siml + x
+        return out
+
+class ChannelAttentionModule(nn.Module):
+    """Channel Attention Module from
+    https://arxiv.org/pdf/1809.02983.pdf(Dual Attention Network)"""
+    def __init__(self):
+        super(ChannelAttentionModule, self).__init__()
+        self.softmax = nn.Softmax(dim=-1)
+        self.beta = nn.Parameter(torch.zeros(1))
+    def forward(self, x):
+        N, C, H, W = x.size()
+        x_t = x.view(N, -1, H*W).permute(0, 2, 1)
+        x = x.view(N, -1, H*W)
+        cattention = torch.matmul(x, x_t) # C x C
+        cattention = torch.max(cattention,
+                                 dim=-1,
+                                 keepdims=True)[0].expand_as(cattention) - cattention
+        # stability results
+        cattention = self.softmax(cattention)
+
+        csiml = torch.matmul(cattention.permute(0, 2, 1),
+                             x).view(N, C, H, W) # A^TX
+        x = x.view(N, C, H,W)
+        out = self.beta*csiml + x
+        return out
+
+
+
 
 def get_interp_size(input, s_factor=1, z_factor=1):  # for caffe
     ori_h, ori_w = input.shape[2:]

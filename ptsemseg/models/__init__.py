@@ -8,9 +8,9 @@ from ptsemseg.models.pspnet import pspnet
 from ptsemseg.models.icnet import icnet
 from ptsemseg.models.linknet import linknet
 from ptsemseg.models.frrn import frrn
+from ptsemseg.models.danet import DANet
 
-
-def get_model(model_dict, n_classes, version=None):
+def get_model(model_dict, n_classes, version=None, **kwargs):
     name = model_dict["arch"]
     model = _get_model_instance(name)
     param_dict = copy.deepcopy(model_dict)
@@ -40,7 +40,16 @@ def get_model(model_dict, n_classes, version=None):
 
     elif name == "icnetBN":
         model = model(n_classes=n_classes, **param_dict)
-
+    elif name == "danet_50":
+        model = model("resnet50",
+                      nclass=n_classes,
+                      pretrain_root='./pretrained',
+                      dilated=True)
+    elif name == "danet_101":
+        model = model("resnet101",
+                      nclass=n_classes,
+                      pretrain_root='./pretrained',
+                      dilated=True)
     else:
         model = model(n_classes=n_classes, **param_dict)
 
@@ -61,6 +70,8 @@ def _get_model_instance(name):
             "linknet": linknet,
             "frrnA": frrn,
             "frrnB": frrn,
+            "danet_50": DANet,
+            "danet_101": DANet,
         }[name]
     except:
         raise ("Model {} not available".format(name))

@@ -7,8 +7,9 @@ from torch.utils import data
 
 from ptsemseg.utils import recursive_glob
 from ptsemseg.augmentations import Compose, RandomHorizontallyFlip, RandomRotate, Scale
-
-
+import json
+from PIL import Image
+from tqdm import tqdm
 class cityscapesLoader(data.Dataset):
     """cityscapesLoader
 
@@ -211,10 +212,10 @@ class cityscapesLoader(data.Dataset):
             b[temp == l] = self.label_colours[l][2]
 
         rgb = np.zeros((temp.shape[0], temp.shape[1], 3))
-        rgb[:, :, 0] = r / 255.0
-        rgb[:, :, 1] = g / 255.0
-        rgb[:, :, 2] = b / 255.0
-        return rgb
+        rgb[:, :, 0] = r # the normalization doesn't make sense if you're going to anyways multiply by 255
+        rgb[:, :, 1] = g
+        rgb[:, :, 2] = b
+        return rgb.astype(np.uint8)
 
     def encode_segmap(self, mask):
         # Put all void classes to zero
@@ -223,31 +224,58 @@ class cityscapesLoader(data.Dataset):
         for _validc in self.valid_classes:
             mask[mask == _validc] = self.class_map[_validc]
         return mask
+    # def compute_stats(self):
+    #     images = []
+    #     if self.split == "train":
+    #         for imfile in tqdm(self.files[self.split]):
+    #             img = Image.open(imfile)
+    #             img = np.asarray(img).reshape(-1, 3)
+    #             images.append(img)
+    #     images = np.vstack(images)
+    #     mean = np.mean(images, axis=0) / 255
+    #     std = np.std(images, axis=0) / 255
+    #     # mean_std = {
+    #     #     "mean": mean,
+    #     #     "std" : std
+    #     # }
+    #     print((mean, std))
 
 
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
 
-    augmentations = Compose([Scale(2048), RandomRotate(10), RandomHorizontallyFlip(0.5)])
 
-    local_path = "/datasets01/cityscapes/112817/"
-    dst = cityscapesLoader(local_path, is_transform=True, augmentations=augmentations)
-    bs = 4
-    trainloader = data.DataLoader(dst, batch_size=bs, num_workers=0)
-    for i, data_samples in enumerate(trainloader):
-        imgs, labels = data_samples
-        import pdb
+# if __name__ == "__main__":
 
-        pdb.set_trace()
-        imgs = imgs.numpy()[:, ::-1, :, :]
-        imgs = np.transpose(imgs, [0, 2, 3, 1])
-        f, axarr = plt.subplots(bs, 2)
-        for j in range(bs):
-            axarr[j][0].imshow(imgs[j])
-            axarr[j][1].imshow(dst.decode_segmap(labels.numpy()[j]))
-        plt.show()
-        a = input()
-        if a == "ex":
-            break
-        else:
-            plt.close()
+#     data_root = '/mnt/DATA/datasets/Cityscapes'
+#     augmentations = Compose([
+#         Scale(2048),
+#         RandomRotate(10),
+#         RandomHorizontallyFlip(0.5)
+#     ])
+#     cityscapes = cityscapesLoader(data_root,
+#                                   is_transform=False)
+#     cityscapes.compute_stats()
+    # import matplotlib.pyplot as plt
+
+    # augmentations = Compose([Scale(2048), RandomRotate(10), RandomHorizontallyFlip(0.5)])
+
+    # local_path = "/datasets01/cityscapes/112817/"
+    # dst = cityscapesLoader(local_path, is_transform=True, augmentations=augmentations)
+    # bs = 4
+    # trainloader = data.DataLoader(dst, batch_size=bs, num_workers=0)
+    # for i, data_samples in enumerate(trainloader):
+    #     imgs, labels = data_samples
+    #     import pdb
+
+    #     pdb.set_trace()
+    #     imgs = imgs.numpy()[:, ::-1, :, :]
+    #     imgs = np.transpose(imgs, [0, 2, 3, 1])
+    #     f, axarr = plt.subplots(bs, 2)
+    #     for j in range(bs):
+    #         axarr[j][0].imshow(imgs[j])
+    #         axarr[j][1].imshow(dst.decode_segmap(labels.numpy()[j]))
+    #     plt.show()
+    #     a = input()
+    #     if a == "ex":
+    #         break
+    #     else:
+    #         plt.close()
