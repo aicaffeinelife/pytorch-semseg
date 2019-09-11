@@ -108,9 +108,3 @@ class DANetHead(nn.Module):
                    sasc_out)
         return outputs
 
-
-
-
-    
-
-

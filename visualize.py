@@ -70,7 +70,7 @@ def inference_single(model,
 
 
 
-
+# Batch inference
 def batch_inference(model,
                     root,
                     image_list,

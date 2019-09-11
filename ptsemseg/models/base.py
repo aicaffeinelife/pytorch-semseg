@@ -47,13 +47,14 @@ class BaseNet(nn.Module):
 
     def extract_features(self, x):
         """Extract features from the base model"""
-        x = self.pretrained.conv(x)
-        x = self.pretrained.bn(x)
-        x = self.pretrained.max_pool(x)
-        c_1 = self.pretrained.layer_1(x)
-        c_2 = self.pretrained.layer_2(x)
-        c_3 = self.pretrained.layer_3(x)
-        c_4 = self.pretrained.layer_4(x)
+        x = self.pretrained.conv1(x)
+        x = self.pretrained.bn1(x)
+        x = self.pretrained.relu(x)
+        x = self.pretrained.maxpool(x)
+        c_1 = self.pretrained.layer1(x)
+        c_2 = self.pretrained.layer2(c_1)
+        c_3 = self.pretrained.layer3(c_2)
+        c_4 = self.pretrained.layer4(c_3)
 
         return (c_1, c_2, c_3, c_4)
 

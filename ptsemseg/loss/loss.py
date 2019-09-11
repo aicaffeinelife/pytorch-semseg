@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 
 
@@ -68,3 +69,4 @@ def bootstrapped_cross_entropy2d(input, target, K, weight=None, size_average=Tru
             size_average=size_average,
         )
     return loss / float(batch_size)
+
