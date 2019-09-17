@@ -295,3 +295,29 @@ class RandomSized(object):
         img, mask = (img.resize((w, h), Image.BILINEAR), mask.resize((w, h), Image.NEAREST))
 
         return self.crop(*self.scale(img, mask))
+
+
+class FixedSizeCenterCrop(object):
+    def __init__(self, crop_size):
+        self.csz = crop_size
+    def __call__(self, img, mask):
+        w, h = img.size
+        short_size = self.csz 
+        if w > h:
+            oh = short_size
+            ow = int(1.0 * w*oh/h)
+        else:
+            ow = short_size
+            oh = int(1.0 * h*ow/w)
+
+        img = img.resize((oh,ow), mode=Image.BILINEAR)
+        mask = mask.resize((oh,ow), mode=Image.NEAREST)
+
+        w, h = img.size
+        x_1 = int(round(h-self.csz)/2)
+        y_1 = int(round(w-self.csz)/2)
+        img = img.crop((x_1, y_1, x_1+self.csz, y_1+self.csz))
+        mask = mask.crop((x_1, y_1, x_1+self.csz, y_1+self.csz))
+        return img, mask
+
+

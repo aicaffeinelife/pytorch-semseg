@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 from ptsemseg.models import get_model
 from ptsemseg.loss import get_loss_function
-from ptsemseg.loader import get_loader
+from ptsemseg.loader import get_segmentation_dataset
 from ptsemseg.utils import get_logger, Table
 from ptsemseg.metrics import runningScore, averageMeter
 from ptsemseg.augmentations import get_composed_augmentations
@@ -38,23 +38,33 @@ def train(cfg, writer, logger):
     data_aug = get_composed_augmentations(augmentations)
 
     # Setup Dataloader
-    data_loader = get_loader(cfg["data"]["dataset"])
-    data_path = cfg["data"]["path"]
+    t_loader = get_segmentation_dataset(cfg["data"]["dataset"],
+                                        cfg["data"]["path"],
+                                        split='train',
+                                        mode='train',
+                                        transforms=data_aug)
+    v_loader = get_segmentation_dataset(cfg["data"]["dataset"],
+                                        cfg["data"]["path"],
+                                        split='val',
+                                        mode='val',
+                                        transforms=data_aug)
+    # data_loader = get_loader(cfg["data"]["dataset"])
+    # data_path = cfg["data"]["path"]
 
-    t_loader = data_loader(
-        data_path,
-        is_transform=True,
-        split=cfg["data"]["train_split"],
-        img_size=(cfg["data"]["img_rows"], cfg["data"]["img_cols"]),
-        augmentations=data_aug
-    )
+    # t_loader = data_loader(
+    #     data_path,
+    #     is_transform=True,
+    #     split=cfg["data"]["train_split"],
+    #     img_size=(cfg["data"]["img_rows"], cfg["data"]["img_cols"]),
+    #     augmentations=data_aug
+    # )
 
-    v_loader = data_loader(
-        data_path,
-        is_transform=True,
-        split=cfg["data"]["val_split"],
-        img_size=(cfg["data"]["img_rows"], cfg["data"]["img_cols"])
-    )
+    # v_loader = data_loader(
+    #     data_path,
+    #     is_transform=True,
+    #     split=cfg["data"]["val_split"],
+    #     img_size=(cfg["data"]["img_rows"], cfg["data"]["img_cols"])
+    # )
 
     n_classes = t_loader.n_classes
     trainloader = data.DataLoader(
@@ -75,6 +85,8 @@ def train(cfg, writer, logger):
     model = get_model(cfg["model"], n_classes).to(device)
 
     model = torch.nn.DataParallel(model, device_ids=range(torch.cuda.device_count()))
+    print(model)
+    print(sum([p.data.nelement() for p in model.parameters()]))
 
     # Setup optimizer, lr_scheduler and loss function
     optimizer_cls = get_optimizer(cfg)

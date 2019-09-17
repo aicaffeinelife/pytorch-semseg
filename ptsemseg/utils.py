@@ -28,7 +28,7 @@ class Table:
         print(tabulate(self.data, headers=self.header))
 
     def print_recent(self):
-        print(tabulate(self.data[-1], headers=self.header))
+        print(tabulate([self.data[-1]], headers=self.header))
 
     def print_upto(self, history=10):
         """Prints the data from the end"""

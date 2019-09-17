@@ -8,7 +8,7 @@ from ptsemseg.loader.cityscapes_loader import cityscapesLoader
 from ptsemseg.loader.nyuv2_loader import NYUv2Loader
 from ptsemseg.loader.sunrgbd_loader import SUNRGBDLoader
 from ptsemseg.loader.mapillary_vistas_loader import mapillaryVistasLoader
-
+from ptsemseg.loader.pcontext_loader import PascalContext
 
 def get_loader(name):
     """get_loader
@@ -24,4 +24,25 @@ def get_loader(name):
         "nyuv2": NYUv2Loader,
         "sunrgbd": SUNRGBDLoader,
         "vistas": mapillaryVistasLoader,
+        "pcontext": PascalContext
     }[name]
+
+def get_segmentation_dataset(name, root, split, mode='train', transforms=None,
+                             target_transforms=None):
+    """Get the appropriate segmentation dataset"""
+    loader_cls = get_loader(name)
+    if name != 'pcontext':
+        test_mode = True if mode == 'val' else False
+        data_loader = loader_cls(root,
+                                 split,
+                                 is_transform=True,
+                                 test_mode=test_mode)
+    else:
+        data_loader = loader_cls(root,
+                                 split,
+                                 mode,
+                                 transforms=transforms,
+                                 target_transforms=target_transforms)
+
+    return data_loader
+

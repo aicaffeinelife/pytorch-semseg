@@ -10,17 +10,25 @@ data:
 training:
     train_iters: 97330 # fine tuning the net
     batch_size: 1
-    val_interval: 20
+    val_interval: 500
     n_workers: 16
     print_interval: 10
+    augmentations:
+      rcrop: 500
+      hflip: 0.5
+
     optimizer:
         name: 'sgd'
-        lr: 1.0e-10
+        lr: 0.00001
         weight_decay: 0.0005
         momentum: 0.99
     loss:
         name: 'cross_entropy'
-        size_average: False
+        size_average: True
     lr_schedule:
-    resume: fcn8s_pascal_best_model.pkl
+      name: "poly_lr"
+      decay_iter: 500
+      max_iter: 97330
+      gamma: 0.9
+    resume: fcn8s_new_pascal_best_model.pkl
     ckpt_path: checkpoints/
